@@ -32,14 +32,14 @@ fun List<Note>.idsAsString() : String {
 
 fun List<Note>.sort(ids: String?) : List<Note> {
     return ids?.split(";")?.map {
-        var correspondingNote: Note? = null
+        var correspondingNote = Note()
         loop@ for (note in this) {
             if (note.id == it.toInt()) {
                 correspondingNote = note
                 break@loop
             }
         }
-        correspondingNote!!
+        correspondingNote
     } ?: listOf()
 }
 
@@ -67,4 +67,21 @@ fun Activity.showKeyboard() {
 fun Context.showKeyboard(view: View) {
     val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     inputMethodManager.showSoftInput(view, 1)
+}
+
+fun List<Note>.toLabelsPlainString(): String {
+    val builder = StringBuilder()
+    for (i in indices) {
+        builder.append(this[i].label)
+        if (i != size - 1) builder.append("-.,-")
+    }
+    return builder.toString()
+}
+
+fun String.toLabelsList(): List<String> {
+    val labels = mutableListOf<String>()
+    this.split("-.,-").forEach {
+        labels.add(it)
+    }
+    return labels.toList()
 }

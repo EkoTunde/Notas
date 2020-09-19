@@ -1,4 +1,4 @@
-package com.ekosoftware.notas
+package com.ekosoftware.notas.app
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

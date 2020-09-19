@@ -13,10 +13,36 @@
         <action
             android:id="@+id/action_homeFragment_to_addEditNoteFragment"
             app:destination="@id/addEditNoteFragment" />
+            <!--app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"-->
+
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment"
+            app:destination="@id/searchFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/addEditNoteFragment"
         android:name="com.ekosoftware.notas.presentation.addedit.AddEditNoteFragment"
         android:label="fragment_add_edit_note"
-        tools:layout="@layout/fragment_add_edit_note" />
+        tools:layout="@layout/fragment_add_edit_note" >
+        <argument
+            android:name="edit"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.ekosoftware.notas.presentation.search.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_addEditNoteFragment"
+            app:destination="@id/addEditNoteFragment" />
+    </fragment>
 </navigation>

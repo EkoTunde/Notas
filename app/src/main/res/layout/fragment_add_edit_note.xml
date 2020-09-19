@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context=".presentation.addedit.AddEditNoteFragment">
+    tools:context=".presentation.addedit.AddEditNoteFragment"
+    android:background="@color/colorAccent"
+    android:transitionName="btn_add_note">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/txt_title_layout"

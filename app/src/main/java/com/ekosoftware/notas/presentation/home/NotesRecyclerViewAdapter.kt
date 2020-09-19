@@ -42,7 +42,7 @@ class NotesRecyclerViewAdapter(private val context: Context, private val interac
 
         override fun onShowPress(p0: MotionEvent?) = Unit
         override fun onSingleTapUp(p0: MotionEvent?): Boolean = false // Return true if not working
-        override fun onDown(p0: MotionEvent?): Boolean = false
+        override fun onDown(e: MotionEvent?): Boolean = false
         override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean = false // return true if not working
         override fun onScroll(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean = false
 

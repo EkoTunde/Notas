@@ -18,12 +18,55 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
 
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomAppBar"
+        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:hideOnScroll="true"
+        app:layout_dodgeInsetEdges="top"
+        app:menu="@menu/bottom_app_bar_menu"
+        app:navigationIcon="@drawable/ic_menu_24" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent"
+        android:clickable="false"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        android:tint="@android:color/transparent"
+        android:transitionName="btn_add_note"
+        app:backgroundTint="@android:color/transparent"
+        app:layout_anchor="@id/bottomAppBar"
+        app:layout_anchorGravity="center|top"
+        app:layout_dodgeInsetEdges="top"
+        app:rippleColor="@android:color/transparent" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_add_note"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        app:layout_anchor="@id/bottomAppBar"
+        app:layout_anchorGravity="center|top"
+        app:layout_dodgeInsetEdges="top"
         app:srcCompat="@drawable/ic_add_24" />
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_gravity="bottom"
+        app:behavior_hideable="true"
+        app:headerLayout="@layout/fragment_bottom_sheet_nav_header"
+        app:layout_behavior="@string/bottom_sheet_behavior"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_insetEdge="bottom"
+        app:menu="@menu/bottom_nav_drawer_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

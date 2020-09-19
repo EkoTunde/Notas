@@ -1,13 +1,15 @@
 package com.ekosoftware.notas.presentation.home
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,9 +18,16 @@ import com.ekosoftware.notas.core.Resource
 import com.ekosoftware.notas.data.model.Note
 import com.ekosoftware.notas.databinding.FragmentHomeBinding
 import com.ekosoftware.notas.presentation.MainViewModel
+import com.ekosoftware.notas.presentation.home.BottomNavigationDrawerFragment.Companion.LISTS_NAMES_ARGS
+import com.ekosoftware.notas.presentation.home.BottomNavigationDrawerFragment.Companion.SELECTED_LIST_ARG
 import com.ekosoftware.notas.util.hide
 import com.ekosoftware.notas.util.show
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_home.*
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
@@ -28,11 +37,9 @@ class HomeFragment : Fragment() {
 
     private lateinit var notes: MutableList<Note>
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    private lateinit var recyclerViewAdapter: NotesRecyclerViewAdapter
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -40,10 +47,70 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView()
+        initBottomBar()
         fetchData()
     }
 
-    private lateinit var recyclerViewAdapter: NotesRecyclerViewAdapter
+    private lateinit var bottomSheet: NavigationView
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<NavigationView>
+
+    private fun initBottomBar() {
+        bottomSheet = binding.navigationView
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+        binding.btnAddNote.setOnClickListener {
+            /*findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToAddEditNoteFragment(
+                binding.btnAddNote.width / 2, binding.btnAddNote.height / 2
+            ))*/
+
+            val extras = FragmentNavigatorExtras(
+                btn to "btn_add_note"
+            )
+            findNavController().navigate(R.id.addEditNoteFragment, null, null, extras)
+        }
+        binding.bottomAppBar.setNavigationOnClickListener {
+            // Handle navigation icon press
+            //bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            val bottomNavDrawerFragment = BottomNavigationDrawerFragment()
+            bottomNavDrawerFragment.arguments = Bundle().apply {
+                putStringArrayList(LISTS_NAMES_ARGS, arrayListOf("Prueba 1", "Prueba 2", "Prueba 3", "Hello men"))
+                putInt(SELECTED_LIST_ARG, 2)
+            }
+            bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)
+        }
+
+        // Handle menu item clicks - works different than in an Activity
+        binding.bottomAppBar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.search -> {
+                    Toast.makeText(requireContext(), R.string.search, Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.more -> {
+                    Toast.makeText(requireContext(), R.string.more, Toast.LENGTH_SHORT).show()
+                    true
+                }
+                android.R.id.home -> {
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    /*val bottomNavDrawerFragment = BottomNavigationDrawerFragment()
+                    bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)*/
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                val bottomNavDrawerFragment = BottomNavigationDrawerFragment()
+                bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }*/
 
     private fun initRecyclerView() = binding.rvNotes.apply {
         layoutManager = LinearLayoutManager(requireContext())
@@ -74,7 +141,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun fetchData(): Unit = mainViewModel.getAllNotes().observe(viewLifecycleOwner, { result ->
+    private fun fetchData(): Unit = mainViewModel.notes.observe(viewLifecycleOwner, { result ->
         when (result) {
             is Resource.Loading -> {
                 binding.progressBar.show()
