@@ -23,4 +23,8 @@ object AppModule {
     @Singleton
     @Provides
     fun provideNoteDao(db: AppDatabase) = db.noteDao()
+
+    @Singleton
+    @Provides
+    fun provideLabelDao(db: AppDatabase) = db.labelDao()
 }

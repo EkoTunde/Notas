@@ -68,7 +68,7 @@ class NotesRecyclerViewAdapter(private val context: Context, private val interac
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotesViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_note, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.item_note, parent, false)
         return NotesViewHolder(view, interaction)
     }
 

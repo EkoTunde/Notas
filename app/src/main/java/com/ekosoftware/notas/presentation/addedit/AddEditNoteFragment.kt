@@ -26,6 +26,10 @@ import kotlin.math.max
 @AndroidEntryPoint
 class AddEditNoteFragment : Fragment() {
 
+    /*val items = listOf("Material", "Design", "Components", "Android")
+    val adapter = ArrayAdapter(requireContext(), R.layout.list_item, items)
+    (textField.editText as? AutoCompleteTextView)?.setAdapter(adapter)*/
+
     companion object {
         const val ARG_ACTION = "add or edit action argument"
     }

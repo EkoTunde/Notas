@@ -17,7 +17,8 @@
     <string name="saved_notes_order">com.ekosoftware.notas.SAVED_NOTES_ORDER</string>
     <string name="saved_selected_list_index">com.ekosoftware.notas.SAVED_SELECTED_LIST_INDEX</string>
     <string name="saved_selected_list_title">com.ekosoftware.notas.SAVED_SELECTED_LIST_TITLE</string>
-    <string name="saved_labels">com.ekosoftware.notas.SAVED_LABELS</string>
+    <string name="saved_labels">com.ekosoftware.notas.LABELS</string>
+    <string name="selected_label">com.ekosoftware.notas.SELECTED_LABEL</string>
     <string name="content_description_search">Buscar</string>
     <string name="content_description_more">Más</string>
     <string name="more">Más</string>
@@ -25,4 +26,10 @@
     <string name="all_notes_title">Todas</string>
     <string name="prueba_titulo">Titulo de prueba</string>
     <string name="create_new_label">Crear nueva etiqueta</string>
+    <string name="add_label_title">Nueva etiqueta</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancelar</string>
+    <string name="create">Crear</string>
+    <string name="label">Etiqueta</string>
+    <string name="save">Guardar</string>
 </resources>

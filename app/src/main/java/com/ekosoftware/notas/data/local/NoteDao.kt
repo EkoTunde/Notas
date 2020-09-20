@@ -18,11 +18,11 @@ interface NoteDao {
     fun searchNotes(search: String?): LiveData<List<NoteEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNote(vararg notes: NoteEntity)
+    suspend fun insertNote(note: NoteEntity)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun updateNote(vararg notes: NoteEntity)
+    suspend fun updateNote(note: NoteEntity)
 
     @Delete
-    suspend fun deleteNote(vararg notes: NoteEntity)
+    suspend fun deleteNote(note: NoteEntity)
 } 

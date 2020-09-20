@@ -1,87 +1,99 @@
 package com.ekosoftware.notas.presentation.home
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.EditText
 import androidx.fragment.app.activityViewModels
 import com.ekosoftware.notas.R
+import com.ekosoftware.notas.core.Resource
+import com.ekosoftware.notas.data.model.Label
 import com.ekosoftware.notas.databinding.FragmentBottomSheetNavDrawerBinding
 import com.ekosoftware.notas.presentation.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class BottomNavigationDrawerFragment : BottomSheetDialogFragment() {
+
+class BottomNavigationDrawerFragment(private val bottomNavigationDrawerListener: BottomNavigationDrawerListener) :
+    BottomSheetDialogFragment() {
+
+    interface BottomNavigationDrawerListener {
+        fun onNewLabel()
+    }
 
     private var _binding: FragmentBottomSheetNavDrawerBinding? = null
     private val binding get() = _binding!!
 
     private val mainViewModel by activityViewModels<MainViewModel>()
 
+    private var addBtnIndex = 1
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentBottomSheetNavDrawerBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    companion object {
-        const val LISTS_NAMES_ARGS = "lists names args"
-        const val SELECTED_LIST_ARG = "selected list arg"
-    }
-
-    private lateinit var listsNames: List<String>
-    private var selectedListIndex: Int = 0
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireArguments().let {
-            listsNames = it.getStringArrayList(LISTS_NAMES_ARGS)!!
-        }
-    }
-
-    private val TAG = "BottomNavigationDrawerF"
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initMenu()
+        setItemSelectedListener()
+    }
 
-        val menu = binding.navigationView.menu
+    private fun initMenu() = binding.navigationView.menu.apply {
+        mainViewModel.labels.observe(viewLifecycleOwner, { result ->
+            when (result) {
+                is Resource.Success -> {
+                    addAllNotesItem()
+                    val labels = result.data
+                    val selectedLabel = mainViewModel.currentSelectedLabel.value
+                    addLabels(labels, selectedLabel)
+                    //addAddingBtn(labels.size)
+                    setGroupCheckable(R.id.group_one, true, true)
+                    setGroupVisible(R.id.group_one, true)
+                }
+                is Resource.Failure -> {
+                    this@BottomNavigationDrawerFragment.dismiss()
+                }
+            }
 
-        menu.add(R.id.group_one, 0, 0, requireContext().getString(R.string.all_notes_title))
-        menu.getItem(0).isChecked = true
+        })
+    }
 
-        /*menu.setGroupCheckable(R.id.group_one, true, true)
-        menu.setGroupVisible(R.id.group_one, true)*/
-
-        val selectListTitle = mainViewModel.selectedLabel()
-
-        for (i in listsNames.indices) {
-            menu.add(R.id.group_one, i+1, (i+1)*100, listsNames[i])
-            if (listsNames[i] == selectListTitle) menu.getItem(i+1).isChecked = true
+    private fun setItemSelectedListener() = binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+        when (menuItem.itemId) {
+            0 -> mainViewModel.setLabel(null)
+            R.id.add_label -> bottomNavigationDrawerListener.onNewLabel()
+            else -> mainViewModel.setLabel(menuItem.title.toString())
         }
+        this@BottomNavigationDrawerFragment.dismiss()
+        true
+    }
 
-        menu.add(1, listsNames.size+1, 1, requireContext().getString(R.string.create_new_label))
-        menu.getItem(listsNames.size+1).setIcon(R.drawable.ic_add_24)
+    private fun Menu.addAllNotesItem() {
+        add(R.id.group_one, 0, 0, requireContext().getString(R.string.all_notes_title))
+        getItem(0).isChecked = true
+    }
 
-        menu.setGroupCheckable(R.id.group_one, true, true)
-        menu.setGroupVisible(R.id.group_one, true)
-
-        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-            // Bottom Navigation Drawer menu item clicks
-            /*if (menuItem.itemId == R.id.all_notes) {
-                // muestra todas las notas...
-            } else {
-                // muestra las notas de la lista especificada
-            }*/
-            //Toast.makeText(requireContext(), menuItem.title, Toast.LENGTH_SHORT).show()
-            Toast.makeText(requireContext(), "${menuItem.itemId}", Toast.LENGTH_SHORT).show()
-            //mainViewModel.saveSelectedListId(menuItem.itemId)
-            mainViewModel.saveSelectedLabel(menuItem.title.toString())
-            this@BottomNavigationDrawerFragment.dismiss()
-            true
+    private fun Menu.addLabels(labels: List<Label>, selectedLabel: String?) {
+        for (i in labels.indices) {
+            add(R.id.group_one, i + 1, (i + 1) * 100, labels[i].name)
+            if (labels[i].name == selectedLabel) {
+                getItem(i + 1).isChecked = true
+            }
         }
+    }
+
+    private fun Menu.addAddingBtn(labelsCount: Int) {
+        add(1, labelsCount + 1, 1, requireContext().getString(R.string.create_new_label))
+        getItem(labelsCount + 1).setIcon(R.drawable.ic_add_24)
+        addBtnIndex = labelsCount + 1
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
     }
-
 }

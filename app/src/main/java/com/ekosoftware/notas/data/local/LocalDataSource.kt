@@ -2,14 +2,10 @@ package com.ekosoftware.notas.data.local
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import androidx.room.Query
-import com.ekosoftware.notas.data.model.Note
-import com.ekosoftware.notas.data.model.NoteEntity
-import com.ekosoftware.notas.data.model.asEntity
-import com.ekosoftware.notas.data.model.asNoteList
+import com.ekosoftware.notas.data.model.*
 import javax.inject.Inject
 
-class LocalDataSource @Inject constructor(private val noteDao: NoteDao) {
+class LocalDataSource @Inject constructor(private val noteDao: NoteDao, private val labelDao: LabelDao) {
 
     fun getAllNotes(): LiveData<List<Note>> = noteDao.getAllNotes().map { it.asNoteList() }
 
@@ -22,5 +18,13 @@ class LocalDataSource @Inject constructor(private val noteDao: NoteDao) {
     suspend fun updateNote(note: Note) = noteDao.updateNote(note.asEntity())
 
     suspend fun deleteNote(note: Note) = noteDao.deleteNote(note.asEntity())
+
+    suspend fun getLabels(): List<Label> = labelDao.getLabels().asLabelList()
+
+    suspend fun insertLabel(label: Label) = labelDao.insertLabel(label.asEntity())
+
+    suspend fun updateLabel(label: Label) = labelDao.updateLabel(label.asEntity())
+
+    suspend fun deleteLabel(label: Label) = labelDao.deleteLabel(label.asEntity())
 
 }

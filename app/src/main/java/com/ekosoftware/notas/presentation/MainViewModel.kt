@@ -1,26 +1,45 @@
 package com.ekosoftware.notas.presentation
 
 import android.content.Context
+import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.ekosoftware.notas.R
 import com.ekosoftware.notas.core.Resource
+import com.ekosoftware.notas.data.model.Label
 import com.ekosoftware.notas.data.model.Note
+import com.ekosoftware.notas.domain.LabelRepository
 import com.ekosoftware.notas.domain.NoteRepository
-import com.ekosoftware.notas.util.idsAsString
 import com.ekosoftware.notas.util.toLabelsList
 import com.ekosoftware.notas.util.toLabelsPlainString
+import com.ekosoftware.notas.util.toPlainString
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainViewModel @ViewModelInject constructor(
     @ApplicationContext private val appContext: Context,
-    private val repository: NoteRepository
+    private val noteRepository: NoteRepository,
+    private val labelRepository: LabelRepository,
+    @Assisted private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    init {
-        getNotesWithLabel(selectedLabel())
+
+    val currentSelectedLabel: MutableLiveData<String?> =
+        savedStateHandle.getLiveData<String?>("selectedLabel", null)
+
+    fun setLabel(label: String?) {
+        currentSelectedLabel.value = label
+    }
+
+    val labels = liveData<Resource<List<Label>>>(viewModelScope.coroutineContext + Dispatchers.Default) {
+        emit(Resource.Loading())
+        try {
+            val result = labelRepository.getLabels()
+            emit(Resource.Success(result))
+        } catch (e: Exception) {
+            emit(Resource.Failure(e))
+        }
     }
 
     val selectedNote = MutableLiveData<Note>()
@@ -29,58 +48,58 @@ class MainViewModel @ViewModelInject constructor(
         selectedNote.value = note
     }
 
-    private val sharedPref by lazy {
-        appContext.getSharedPreferences(
-            appContext.getString(R.string.preference_file_key), Context.MODE_PRIVATE
-        )
-    }
+    /*private fun sharedPref() =
+        appContext.getSharedPreferences(appContext.getString(R.string.preference_file_key), Context.MODE_PRIVATE)
 
-    fun selectedLabel(): String? = sharedPref.getString(
-        appContext.getString(R.string.saved_selected_list_title),
+    fun selectedLabel() = sharedPref().getString(
+        appContext.getString(R.string.selected_label),
         appContext.getString(R.string.all_notes_title)
     )
 
-    fun saveSelectedLabel(listTitle: String? = null) = with(sharedPref.edit()) {
-        putString(appContext.getString(R.string.saved_selected_list_title), listTitle)
+    private fun saveSelectedLabel(label: String? = null) = with(sharedPref().edit()) {
+        putString(appContext.getString(R.string.selected_label), label)
         apply()
     }
 
-    fun saveIds(notes: MutableList<Note>) {
-        val newSortedOrder = notes.idsAsString()
-        with(sharedPref.edit()) {
-            putString(appContext.getString(R.string.saved_notes_order), newSortedOrder)
-            apply()
+    fun labels() = sharedPref().getString(appContext.getString(R.string.saved_labels), "")?.toLabelsList() ?: listOf()
+
+    fun addLabel(label: String) {
+        labels().toMutableList().apply {
+            add(label)
+        }.also {
+            it.saveLabels()
         }
     }
 
-    private fun sortedIds() = sharedPref.getString(appContext.getString(R.string.saved_notes_order), "")
-
-    fun getLabels() = sharedPref.getString(appContext.getString(R.string.saved_labels), "")?.toLabelsList() ?: listOf()
-
-    fun List<Note>.saveLabels() = with(sharedPref.edit()) {
-        putString(appContext.getString(R.string.saved_labels), this@saveLabels.toLabelsPlainString())
+    private fun MutableList<String>.saveLabels() = with(sharedPref().edit()) {
+        putString(appContext.getString(R.string.saved_labels), this@saveLabels.toPlainString())
         apply()
     }
 
-    private val selectedLabel = MutableLiveData<String>()
-
-    fun getNotesWithLabel(label: String? = null) {
-        this.selectedLabel.value = label
+    private fun List<Note>.saveLabelsFromNotes() = with(sharedPref().edit()) {
+        putString(appContext.getString(R.string.saved_labels), this@saveLabelsFromNotes.toLabelsPlainString())
+        apply()
     }
 
-    val notes = this.selectedLabel.distinctUntilChanged().switchMap { label ->
+    private val selectedLabel = MutableLiveData<String?>()
+
+    fun selectLabel(label: String? = null) {
+        saveSelectedLabel(label)
+        selectedLabel.value = appContext.getString(R.string.all_notes_title)
+    }*/
+
+    val notes = currentSelectedLabel.distinctUntilChanged().switchMap { label ->
         liveData<Resource<List<Note>>>(viewModelScope.coroutineContext + Dispatchers.Default) {
             emit(Resource.Loading())
             try {
                 when (label) {
                     null -> emitSource(
-                        repository.getAllNotes().map { result ->
-                            result.saveLabels()
+                        noteRepository.getAllNotes().map { result ->
                             Resource.Success(result)
                         }
                     )
                     else -> emitSource(
-                        repository.getNotesByLabel(label).map { Resource.Success(it) }
+                        noteRepository.getNotesByLabel(label).map { Resource.Success(it) }
                     )
                 }
             } catch (e: Exception) {
@@ -96,17 +115,25 @@ class MainViewModel @ViewModelInject constructor(
 
     fun insertNote(note: Note) = viewModelScope.launch {
         dispatchEvent(Event.INSERT)
-        repository.addNote(note)
+        noteRepository.addNote(note)
     }
 
     fun updateNote(note: Note) = viewModelScope.launch {
         dispatchEvent(Event.UPDATE)
-        repository.updateNote(note)
+        noteRepository.updateNote(note)
     }
 
     fun deleteNote(note: Note) = viewModelScope.launch {
         dispatchEvent(Event.DELETE)
-        repository.deleteNote(note)
+        noteRepository.deleteNote(note)
+    }
+
+    fun addLabel(label: Label) = viewModelScope.launch {
+        labelRepository.addLabel(label)
+    }
+
+    fun updateLabel(label: Label) = viewModelScope.launch {
+
     }
 
     val eventReceiver = MutableLiveData<Event>()

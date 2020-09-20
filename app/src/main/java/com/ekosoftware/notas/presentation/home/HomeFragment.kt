@@ -1,15 +1,18 @@
 package com.ekosoftware.notas.presentation.home
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.AppBarConfiguration
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,8 +21,6 @@ import com.ekosoftware.notas.core.Resource
 import com.ekosoftware.notas.data.model.Note
 import com.ekosoftware.notas.databinding.FragmentHomeBinding
 import com.ekosoftware.notas.presentation.MainViewModel
-import com.ekosoftware.notas.presentation.home.BottomNavigationDrawerFragment.Companion.LISTS_NAMES_ARGS
-import com.ekosoftware.notas.presentation.home.BottomNavigationDrawerFragment.Companion.SELECTED_LIST_ARG
 import com.ekosoftware.notas.util.hide
 import com.ekosoftware.notas.util.show
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -37,7 +38,9 @@ class HomeFragment : Fragment() {
 
     private lateinit var notes: MutableList<Note>
 
-    private lateinit var recyclerViewAdapter: NotesRecyclerViewAdapter
+    private lateinit var notesRecyclerViewAdapter: NotesRecyclerViewAdapter
+    private lateinit var labelRecyclerAdapter: LabelRecyclerAdapter
+    private lateinit var concatAdapter: ConcatAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -59,23 +62,18 @@ class HomeFragment : Fragment() {
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
 
         binding.btnAddNote.setOnClickListener {
-            /*findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToAddEditNoteFragment(
-                binding.btnAddNote.width / 2, binding.btnAddNote.height / 2
-            ))*/
-
             val extras = FragmentNavigatorExtras(
                 btn to "btn_add_note"
             )
             findNavController().navigate(R.id.addEditNoteFragment, null, null, extras)
         }
         binding.bottomAppBar.setNavigationOnClickListener {
-            // Handle navigation icon press
-            //bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            val bottomNavDrawerFragment = BottomNavigationDrawerFragment()
-            bottomNavDrawerFragment.arguments = Bundle().apply {
-                putStringArrayList(LISTS_NAMES_ARGS, arrayListOf("Prueba 1", "Prueba 2", "Prueba 3", "Hello men"))
-                putInt(SELECTED_LIST_ARG, 2)
-            }
+            val bottomNavDrawerFragment =
+                BottomNavigationDrawerFragment(object : BottomNavigationDrawerFragment.BottomNavigationDrawerListener {
+                    override fun onNewLabel() {
+                        findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToLabelsFragment())
+                    }
+                })
             bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)
         }
 
@@ -90,36 +88,29 @@ class HomeFragment : Fragment() {
                     Toast.makeText(requireContext(), R.string.more, Toast.LENGTH_SHORT).show()
                     true
                 }
-                android.R.id.home -> {
-                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    /*val bottomNavDrawerFragment = BottomNavigationDrawerFragment()
-                    bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)*/
-                    true
-                }
                 else -> false
             }
         }
     }
 
-    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                val bottomNavDrawerFragment = BottomNavigationDrawerFragment()
-                bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }*/
-
     private fun initRecyclerView() = binding.rvNotes.apply {
+
         layoutManager = LinearLayoutManager(requireContext())
         addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        recyclerViewAdapter = NotesRecyclerViewAdapter(requireContext(), adapterInteraction)
-        adapter = recyclerViewAdapter
-        val noteListCallback = NotesListItemTouchHelper(recyclerViewAdapter)
+
+        labelRecyclerAdapter = LabelRecyclerAdapter(requireContext()).apply {
+            submitNewLabel(
+                mainViewModel.currentSelectedLabel.value ?: requireContext().getString(R.string.all_notes_title)
+            )
+        }
+        notesRecyclerViewAdapter = NotesRecyclerViewAdapter(requireContext(), adapterInteraction)
+
+        concatAdapter = ConcatAdapter(labelRecyclerAdapter, notesRecyclerViewAdapter)
+        adapter = concatAdapter
+
+        val noteListCallback = NotesListItemTouchHelper(notesRecyclerViewAdapter)
         val itemTouchHelper = ItemTouchHelper(noteListCallback)
-        recyclerViewAdapter.setTouchHelper(itemTouchHelper)
+        notesRecyclerViewAdapter.setTouchHelper(itemTouchHelper)
         itemTouchHelper.attachToRecyclerView(this)
     }
 
@@ -132,12 +123,11 @@ class HomeFragment : Fragment() {
             val note = notes[fromPosition]
             notes.removeAt(fromPosition)
             notes.add(toPosition, note)
-            mainViewModel.saveIds(notes)
         }
 
         override fun onDelete(position: Int) {
             mainViewModel.deleteNote(notes[position])
-            notes.apply { removeAt(position) }.also { mainViewModel.saveIds(it) }
+
         }
     }
 
@@ -149,7 +139,7 @@ class HomeFragment : Fragment() {
             is Resource.Success -> {
                 binding.progressBar.hide()
                 notes = result.data.toMutableList()
-                recyclerViewAdapter.submitList(notes)
+                notesRecyclerViewAdapter.submitList(notes)
             }
             is Resource.Failure -> {
                 binding.progressBar.hide()

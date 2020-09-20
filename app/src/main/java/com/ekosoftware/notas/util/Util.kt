@@ -21,16 +21,16 @@ fun Context.toast(resId: Int, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, this.getString(resId), duration).show()
 }
 
-fun List<Note>.idsAsString() : String {
+fun List<Note>.idsAsString(): String {
     val builder = StringBuilder()
     for (i in this.indices) {
         builder.append(this[i])
-        if (i != this.size-1) builder.append(";")
+        if (i != this.size - 1) builder.append(";")
     }
     return builder.toString()
 }
 
-fun List<Note>.sort(ids: String?) : List<Note> {
+fun List<Note>.sort(ids: String?): List<Note> {
     return ids?.split(";")?.map {
         var correspondingNote = Note()
         loop@ for (note in this) {
@@ -73,6 +73,15 @@ fun List<Note>.toLabelsPlainString(): String {
     val builder = StringBuilder()
     for (i in indices) {
         builder.append(this[i].label)
+        if (i != size - 1) builder.append("-.,-")
+    }
+    return builder.toString()
+}
+
+fun MutableList<String>.toPlainString(): String {
+    val builder = StringBuilder()
+    for (i in indices) {
+        builder.append(this[i])
         if (i != size - 1) builder.append("-.,-")
     }
     return builder.toString()
