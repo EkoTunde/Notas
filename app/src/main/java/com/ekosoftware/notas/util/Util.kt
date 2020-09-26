@@ -30,19 +30,6 @@ fun List<Note>.idsAsString(): String {
     return builder.toString()
 }
 
-fun List<Note>.sort(ids: String?): List<Note> {
-    return ids?.split(";")?.map {
-        var correspondingNote = Note()
-        loop@ for (note in this) {
-            if (note.id == it.toInt()) {
-                correspondingNote = note
-                break@loop
-            }
-        }
-        correspondingNote
-    } ?: listOf()
-}
-
 fun Fragment.hideKeyboard() {
     view?.let { activity?.hideKeyboard(it) }
 }
@@ -67,30 +54,4 @@ fun Activity.showKeyboard() {
 fun Context.showKeyboard(view: View) {
     val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     inputMethodManager.showSoftInput(view, 1)
-}
-
-fun List<Note>.toLabelsPlainString(): String {
-    val builder = StringBuilder()
-    for (i in indices) {
-        builder.append(this[i].label)
-        if (i != size - 1) builder.append("-.,-")
-    }
-    return builder.toString()
-}
-
-fun MutableList<String>.toPlainString(): String {
-    val builder = StringBuilder()
-    for (i in indices) {
-        builder.append(this[i])
-        if (i != size - 1) builder.append("-.,-")
-    }
-    return builder.toString()
-}
-
-fun String.toLabelsList(): List<String> {
-    val labels = mutableListOf<String>()
-    this.split("-.,-").forEach {
-        labels.add(it)
-    }
-    return labels.toList()
 }

@@ -1,16 +1,12 @@
 package com.ekosoftware.notas.presentation.home
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -23,23 +19,40 @@ import com.ekosoftware.notas.databinding.FragmentHomeBinding
 import com.ekosoftware.notas.presentation.MainViewModel
 import com.ekosoftware.notas.util.hide
 import com.ekosoftware.notas.util.show
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.navigation.NavigationView
+import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_home.*
+import java.lang.Exception
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
+    companion object {
+        private const val STATE_LOADING = "loading"
+        private const val STATE_NOT_LOADING = "notLoading"
+    }
+
+    private fun paraHacer() {
+        TODO(
+            "Tengo que traer:" +
+                    "- Labels -> para el bottom sheet dialog" +
+                    "Tengo que hacer:" +
+                    "- ver las notas" +
+                    "- lanzar bottom sheet dialog" +
+                    "- activar busqueda" +
+                    "- Agregar/editar notas" +
+                    "- Crear (y editar) labels"
+        )
+    }
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val mainViewModel by activityViewModels<MainViewModel>()
+    private val viewModel by activityViewModels<MainViewModel>()
 
     private lateinit var notes: MutableList<Note>
 
-    private lateinit var notesRecyclerViewAdapter: NotesRecyclerViewAdapter
-    private lateinit var labelRecyclerAdapter: LabelRecyclerAdapter
+    private lateinit var notesRecyclerAdapter: NotesRecyclerAdapter
     private lateinit var concatAdapter: ConcatAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -51,72 +64,73 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView()
         initBottomBar()
+        observeCurrentLabel()
         fetchData()
     }
 
-    private lateinit var bottomSheet: NavigationView
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<NavigationView>
-
-    private fun initBottomBar() {
-        bottomSheet = binding.navigationView
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-
-        binding.btnAddNote.setOnClickListener {
-            val extras = FragmentNavigatorExtras(
-                btn to "btn_add_note"
-            )
-            findNavController().navigate(R.id.addEditNoteFragment, null, null, extras)
-        }
-        binding.bottomAppBar.setNavigationOnClickListener {
-            val bottomNavDrawerFragment =
-                BottomNavigationDrawerFragment(object : BottomNavigationDrawerFragment.BottomNavigationDrawerListener {
-                    override fun onNewLabel() {
-                        findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToLabelsFragment())
-                    }
-                })
-            bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)
+    private fun initBottomBar() = binding.apply {
+        btnAddNote.setOnClickListener {
+            val action = HomeFragmentDirections.actionHomeFragmentToAddEditNoteFragment(false)
+            findNavController().navigate(action)
         }
 
-        // Handle menu item clicks - works different than in an Activity
-        binding.bottomAppBar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.search -> {
-                    Toast.makeText(requireContext(), R.string.search, Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.more -> {
-                    Toast.makeText(requireContext(), R.string.more, Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
-            }
+        bottomAppBar.apply {
+            initNavigation()
+            initMenuListener()
         }
     }
+
+    private fun BottomAppBar.initNavigation() = this.setNavigationOnClickListener {
+        val bottomNavDrawerFragment =
+            BottomNavigationDrawerFragment(bottomNavigationDrawerListener)
+        bottomNavDrawerFragment.show(requireActivity().supportFragmentManager, bottomNavDrawerFragment.tag)
+    }
+
+    // Handle menu item clicks - works different than in an Activity
+    private fun BottomAppBar.initMenuListener() = this.setOnMenuItemClickListener {
+        when (it.itemId) {
+            R.id.search -> {
+                Toast.makeText(requireContext(), R.string.search, Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.more -> {
+                Toast.makeText(requireContext(), R.string.more, Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> false
+        }
+    }
+
+    private val bottomNavigationDrawerListener =
+        object : BottomNavigationDrawerFragment.BottomNavigationDrawerListener {
+            override fun onNewLabel() {
+                findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToLabelsFragment())
+            }
+        }
 
     private fun initRecyclerView() = binding.rvNotes.apply {
 
         layoutManager = LinearLayoutManager(requireContext())
-        addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+        //addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        labelRecyclerAdapter = LabelRecyclerAdapter(requireContext()).apply {
-            submitNewLabel(
-                mainViewModel.currentSelectedLabel.value ?: requireContext().getString(R.string.all_notes_title)
-            )
-        }
-        notesRecyclerViewAdapter = NotesRecyclerViewAdapter(requireContext(), adapterInteraction)
+        notesRecyclerAdapter = NotesRecyclerAdapter(requireContext(), adapterInteraction)
 
-        concatAdapter = ConcatAdapter(labelRecyclerAdapter, notesRecyclerViewAdapter)
+        val spaceRecyclerAdapter = SpaceRecyclerAdapter(requireContext())
+
+        concatAdapter = ConcatAdapter(notesRecyclerAdapter, spaceRecyclerAdapter)
         adapter = concatAdapter
 
-        val noteListCallback = NotesListItemTouchHelper(notesRecyclerViewAdapter)
+        val noteListCallback = NotesListItemTouchHelper(notesRecyclerAdapter)
         val itemTouchHelper = ItemTouchHelper(noteListCallback)
-        notesRecyclerViewAdapter.setTouchHelper(itemTouchHelper)
+        notesRecyclerAdapter.setTouchHelper(itemTouchHelper)
         itemTouchHelper.attachToRecyclerView(this)
     }
 
-    private val adapterInteraction = object : NotesRecyclerViewAdapter.Interaction {
+    private val adapterInteraction = object : NotesRecyclerAdapter.Interaction {
         override fun onItemSelected(item: Note) {
-            findNavController().navigate(R.id.action_homeFragment_to_addEditNoteFragment)
+            viewModel.selectNote(item)
+            val action = HomeFragmentDirections.actionHomeFragmentToAddEditNoteFragment(true)
+            findNavController().navigate(action)
         }
 
         override fun onItemMoved(fromPosition: Int, toPosition: Int) {
@@ -126,31 +140,82 @@ class HomeFragment : Fragment() {
         }
 
         override fun onDelete(position: Int) {
-            mainViewModel.deleteNote(notes[position])
+            if (position < notes.size) {
 
+                val noteToDelete = notes[position]
+                viewModel.deleteNote(noteToDelete)
+
+                Snackbar.make(
+                    binding.coordLayout,
+                    getString(R.string.event_msg, getString(R.string.deleted)),
+                    Snackbar.LENGTH_LONG
+                ).apply {
+                    anchorView = binding.btnAddNote
+                    setAction(R.string.undo) {
+                        viewModel.insertNote(noteToDelete)
+                        try {
+                            binding.rvNotes.smoothScrollToPosition(position)
+                            notesRecyclerAdapter.notifyItemRangeChanged(0, position)
+                        } catch (e: Exception) {
+                            Toast.makeText(requireContext(), "error $e", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    show()
+                }
+            }
         }
     }
 
-    private fun fetchData(): Unit = mainViewModel.notes.observe(viewLifecycleOwner, { result ->
+    private fun observeCurrentLabel() = viewModel.currentSelectedLabelName.observe(viewLifecycleOwner, { labelName ->
+        val name = labelName ?: requireContext().getString(R.string.all_notes_title)
+        binding.toolbar.title = name
+        binding.collapsingToolbarLayout.title = name
+    })
+
+    private fun fetchData(): Unit = viewModel.notes.observe(viewLifecycleOwner, { result ->
         when (result) {
-            is Resource.Loading -> {
-                binding.progressBar.show()
-            }
+            is Resource.Loading -> changeState(STATE_LOADING)
             is Resource.Success -> {
-                binding.progressBar.hide()
+                changeState(STATE_NOT_LOADING)
                 notes = result.data.toMutableList()
-                notesRecyclerViewAdapter.submitList(notes)
+                showNotesNotFound(notes.isEmpty())
+                notesRecyclerAdapter.submitList(notes)
             }
             is Resource.Failure -> {
-                binding.progressBar.hide()
-                Toast.makeText(
-                    requireContext(),
-                    requireContext().getString(R.string.error_fecthing_notes, result.exception),
-                    Toast.LENGTH_SHORT
+                changeState(STATE_NOT_LOADING)
+                Snackbar.make(
+                    binding.coordLayout,
+                    getString(R.string.error_fecthing_notes, result.exception),
+                    Snackbar.LENGTH_LONG
                 ).show()
             }
         }
     })
+
+    private fun changeState(state: String) = binding.apply {
+        when (state) {
+            STATE_LOADING -> {
+                progressBar.show()
+                rvNotes.hide()
+                arrayOf(bottomAppBar, transparentFab, btnAddNote).forEach { it.isEnabled = false }
+            }
+            else -> {
+                progressBar.hide()
+                rvNotes.show()
+                arrayOf(bottomAppBar, transparentFab, btnAddNote).forEach { it.isEnabled = true }
+            }
+        }
+    }
+
+    private fun showNotesNotFound(showBackground: Boolean) = binding.apply {
+        if (showBackground) {
+            rvNotes.hide()
+            noNotesAddedBackground.show()
+        } else {
+            rvNotes.show()
+            noNotesAddedBackground.hide()
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()

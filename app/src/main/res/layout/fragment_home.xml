@@ -4,13 +4,88 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/coord_layout"
     tools:context=".presentation.home.HomeFragment">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        android:elevation="25dp">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleTextColor="@android:color/white"
+            app:contentScrim="@android:color/white"
+            android:background="@android:color/white"
+            app:layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="84dp" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/white"
+                app:layout_collapseMode="pin"
+
+                app:titleTextColor="@android:color/white"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_notes"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_title"
         tools:listitem="@layout/item_note" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/no_notes_added_background"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="8">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_marginBottom="128dp"
+            android:layout_weight="4"
+            android:cropToPadding="true"
+            android:padding="32dp"
+            android:src="@drawable/void_no_notes_found"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/no_notes_added" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:lines="2"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="@+id/imageView"
+            android:text="@string/no_notes" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -24,13 +99,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:hideOnScroll="true"
-        app:layout_dodgeInsetEdges="top"
         app:menu="@menu/bottom_app_bar_menu"
         app:navigationIcon="@drawable/ic_menu_24" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn"
+        android:id="@+id/transparent_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -39,11 +112,10 @@
         android:outlineAmbientShadowColor="@android:color/transparent"
         android:outlineSpotShadowColor="@android:color/transparent"
         android:tint="@android:color/transparent"
-        android:transitionName="btn_add_note"
+        android:transitionName="transparent_fab"
         app:backgroundTint="@android:color/transparent"
         app:layout_anchor="@id/bottomAppBar"
         app:layout_anchorGravity="center|top"
-        app:layout_dodgeInsetEdges="top"
         app:rippleColor="@android:color/transparent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -52,21 +124,6 @@
         android:layout_height="wrap_content"
         app:layout_anchor="@id/bottomAppBar"
         app:layout_anchorGravity="center|top"
-        app:layout_dodgeInsetEdges="top"
         app:srcCompat="@drawable/ic_add_24" />
-
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_gravity="bottom"
-        app:behavior_hideable="true"
-        app:headerLayout="@layout/fragment_bottom_sheet_nav_header"
-        app:layout_behavior="@string/bottom_sheet_behavior"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_insetEdge="bottom"
-        app:menu="@menu/bottom_nav_drawer_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

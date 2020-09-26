@@ -1,13 +1,11 @@
 package com.ekosoftware.notas.presentation.home
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.fragment.app.activityViewModels
 import com.ekosoftware.notas.R
 import com.ekosoftware.notas.core.Resource
@@ -27,9 +25,7 @@ class BottomNavigationDrawerFragment(private val bottomNavigationDrawerListener:
     private var _binding: FragmentBottomSheetNavDrawerBinding? = null
     private val binding get() = _binding!!
 
-    private val mainViewModel by activityViewModels<MainViewModel>()
-
-    private var addBtnIndex = 1
+    private val viewModel by activityViewModels<MainViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentBottomSheetNavDrawerBinding.inflate(inflater, container, false)
@@ -42,31 +38,39 @@ class BottomNavigationDrawerFragment(private val bottomNavigationDrawerListener:
         setItemSelectedListener()
     }
 
-    private fun initMenu() = binding.navigationView.menu.apply {
-        mainViewModel.labels.observe(viewLifecycleOwner, { result ->
-            when (result) {
-                is Resource.Success -> {
+    private lateinit var labels: List<Label>
+
+    private fun initMenu() = viewModel.labels.observe(viewLifecycleOwner, { result ->
+        when (result) {
+            is Resource.Success -> {
+                binding.navigationView.menu.apply {
                     addAllNotesItem()
-                    val labels = result.data
-                    val selectedLabel = mainViewModel.currentSelectedLabel.value
-                    addLabels(labels, selectedLabel)
-                    //addAddingBtn(labels.size)
+                    labels = result.data
+                    val selectedLabelName = viewModel.currentSelectedLabelName.value
+                    addLabels(labels, selectedLabelName)
                     setGroupCheckable(R.id.group_one, true, true)
                     setGroupVisible(R.id.group_one, true)
                 }
-                is Resource.Failure -> {
-                    this@BottomNavigationDrawerFragment.dismiss()
-                }
             }
+            is Resource.Failure -> {
+                this@BottomNavigationDrawerFragment.dismiss()
+            }
+        }
+    })
 
-        })
-    }
-
+    private val TAG = "BottomNavigationDrawerF"
     private fun setItemSelectedListener() = binding.navigationView.setNavigationItemSelectedListener { menuItem ->
         when (menuItem.itemId) {
-            0 -> mainViewModel.setLabel(null)
+            0 -> viewModel.selectLabel(null)
             R.id.add_label -> bottomNavigationDrawerListener.onNewLabel()
-            else -> mainViewModel.setLabel(menuItem.title.toString())
+            else -> for (label in labels) { // Looks for selected item in label's list
+                Log.d(TAG, "setItemSelectedListener: label is $label")
+                if (label.name == menuItem.title.toString()) {
+                    Log.d(TAG, "setItemSelectedListener: it's equal to title ${menuItem.title}")
+                    viewModel.selectLabel(label)
+                    break
+                }
+            }
         }
         this@BottomNavigationDrawerFragment.dismiss()
         true
@@ -77,19 +81,13 @@ class BottomNavigationDrawerFragment(private val bottomNavigationDrawerListener:
         getItem(0).isChecked = true
     }
 
-    private fun Menu.addLabels(labels: List<Label>, selectedLabel: String?) {
+    private fun Menu.addLabels(labels: List<Label>, selectedLabelName: String?) {
         for (i in labels.indices) {
             add(R.id.group_one, i + 1, (i + 1) * 100, labels[i].name)
-            if (labels[i].name == selectedLabel) {
+            if (labels[i].name == selectedLabelName) {
                 getItem(i + 1).isChecked = true
             }
         }
-    }
-
-    private fun Menu.addAddingBtn(labelsCount: Int) {
-        add(1, labelsCount + 1, 1, requireContext().getString(R.string.create_new_label))
-        getItem(labelsCount + 1).setIcon(R.drawable.ic_add_24)
-        addBtnIndex = labelsCount + 1
     }
 
     override fun onDestroy() {
@@ -97,3 +95,8 @@ class BottomNavigationDrawerFragment(private val bottomNavigationDrawerListener:
         _binding = null
     }
 }
+/*private fun Menu.addAddingBtn(labelsCount: Int) {
+        add(1, labelsCount + 1, 1, requireContext().getString(R.string.create_new_label))
+        getItem(labelsCount + 1).setIcon(R.drawable.ic_add_24)
+        addBtnIndex = labelsCount + 1
+    }*/

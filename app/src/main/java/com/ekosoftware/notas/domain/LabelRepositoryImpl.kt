@@ -9,7 +9,9 @@ import javax.inject.Inject
 @ActivityRetainedScoped
 class LabelRepositoryImpl @Inject constructor(private val localDataSource: LocalDataSource) : LabelRepository {
 
-    override suspend fun getLabels(): List<Label> = localDataSource.getLabels()
+    override suspend fun getLabelById(labelId: Long): Label = localDataSource.getLabelById(labelId)
+
+    override suspend fun getLabels(): LiveData<List<Label>> = localDataSource.getLabels()
 
     override suspend fun addLabel(label: Label) = localDataSource.insertLabel(label)
 

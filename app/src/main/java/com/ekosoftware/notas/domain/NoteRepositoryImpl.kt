@@ -9,9 +9,10 @@ import javax.inject.Inject
 @ActivityRetainedScoped
 class NoteRepositoryImpl @Inject constructor(private val localDataSource: LocalDataSource) : NoteRepository {
 
-    override fun getAllNotes(): LiveData<List<Note>> = localDataSource.getAllNotes()
-
-    override fun getNotesByLabel(label: String?): LiveData<List<Note>> = localDataSource.getNotesByLabel(label)
+    override fun getNotesByLabel(labelId: Long?): LiveData<List<Note>> = when (labelId) {
+        null -> localDataSource.getAllNotes()
+        else -> localDataSource.getNotesByLabel(labelId)
+    }
 
     override fun searchNotes(search: String?): LiveData<List<Note>> = localDataSource.searchNotes(search)
 
@@ -21,13 +22,4 @@ class NoteRepositoryImpl @Inject constructor(private val localDataSource: LocalD
 
     override suspend fun deleteNote(note: Note) = localDataSource.deleteNote(note)
 
-    fun prueba(label: String? = null, search: String? = null): LiveData<List<Note>> {
-        label?.let {
-            return localDataSource.getNotesByLabel(it)
-        }
-        search?.let {
-            return localDataSource.searchNotes(search)
-        }
-        return getAllNotes()
-    }
 }

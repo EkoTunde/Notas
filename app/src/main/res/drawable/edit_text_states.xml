@@ -4,5 +4,6 @@
         android:drawable="@drawable/ic_outline_label_24" />
     <item
         android:state_enabled="true" android:state_focused="false"
-        android:drawable="@drawable/ic_outline_delete_24" />
+        android:drawable="@drawable/ic_outline_delete_24"
+        />
 </selector>

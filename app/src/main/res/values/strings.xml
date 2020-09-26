@@ -27,9 +27,19 @@
     <string name="prueba_titulo">Titulo de prueba</string>
     <string name="create_new_label">Crear nueva etiqueta</string>
     <string name="add_label_title">Nueva etiqueta</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
     <string name="create">Crear</string>
     <string name="label">Etiqueta</string>
     <string name="save">Guardar</string>
+    <string name="labels">Etiquetas</string>
+    <string name="undo">Deshacer</string>
+    <string name="redo">Rehacer</string>
+    <string name="add_label">etiqueta</string>
+    <string name="no_selection_list_item"><![CDATA[<Seleccionar>]]></string>
+    <string name="upcoming_feature">Comingo soon!</string>
+    <string name="no_title_note">Sín título</string>
+    <string name="error_fetching_labels">Ocurrió un error al cargar las etiquetas</string>
+    <string name="no_notes_added">No se agregaron notas</string>
+    <string name="no_notes">¡No hay notas para esta etiqueta!\n Presiona + para agregar una.</string>
 </resources>

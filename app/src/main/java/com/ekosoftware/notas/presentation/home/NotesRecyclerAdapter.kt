@@ -1,6 +1,7 @@
 package com.ekosoftware.notas.presentation.home
 
 import android.content.Context
+import android.graphics.Typeface
 import android.view.*
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -10,7 +11,7 @@ import com.ekosoftware.notas.R
 import com.ekosoftware.notas.data.model.Note
 import kotlinx.android.synthetic.main.item_note.view.*
 
-class NotesRecyclerViewAdapter(private val context: Context, private val interaction: Interaction? = null) :
+class NotesRecyclerAdapter(private val context: Context, private val interaction: Interaction? = null) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemTouchHelperAdapter {
 
     private lateinit var touchHelper: ItemTouchHelper
@@ -35,7 +36,12 @@ class NotesRecyclerViewAdapter(private val context: Context, private val interac
                 setOnClickListener {
                     interaction?.onItemSelected(item)
                 }
-                txt_title.text = item.title
+                if (item.title.isNullOrEmpty()) {
+                    txt_title.text = this@NotesRecyclerAdapter.context.getString(R.string.no_title_note)
+                    txt_title.setTypeface(null, Typeface.ITALIC)
+                } else {
+                    txt_title.text = item.title
+                }
                 txt_content.text = item.content
             }
         }
@@ -43,7 +49,9 @@ class NotesRecyclerViewAdapter(private val context: Context, private val interac
         override fun onShowPress(p0: MotionEvent?) = Unit
         override fun onSingleTapUp(p0: MotionEvent?): Boolean = false // Return true if not working
         override fun onDown(e: MotionEvent?): Boolean = false
-        override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean = false // return true if not working
+        override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean =
+            false // return true if not working
+
         override fun onScroll(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean = false
 
         override fun onLongPress(p0: MotionEvent?) = touchHelper.startDrag(this@NotesViewHolder)

@@ -35,6 +35,7 @@
 
             <EditText
                 android:id="@+id/txt_add_label"
+                android:imeOptions="actionDone"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
