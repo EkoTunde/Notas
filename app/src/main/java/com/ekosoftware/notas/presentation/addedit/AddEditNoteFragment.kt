@@ -94,6 +94,10 @@ class AddEditNoteFragment : Fragment() {
             is Resource.Success -> result.data.let {
                 labels = it
                 it.loadInUI()
+                if (args.edit) {
+                    selectedLabel = labels.getLabelById(receivedNote?.labelId)
+                    selectLabelInList()
+                }
             }
             is Resource.Failure -> Snackbar.make(
                 binding.coordLayout,
@@ -104,15 +108,18 @@ class AddEditNoteFragment : Fragment() {
     })
 
 
+    private val TAG = "AddEditNoteFragment"
     private fun fetchNote() = mainViewModel.selectedNote.observe(viewLifecycleOwner, {
         receivedNote = it
+        Log.d(TAG, "fetchNote: $labels")
         selectedLabel = labels.getLabelById(receivedNote?.labelId)
+        Log.d(TAG, "fetchNote: selected label is $selectedLabel")
         selectLabelInList()
         receivedNote?.loadInUI()
     })
 
     private fun selectLabelInList() = (binding.txtLabelLayout.editText as? AutoCompleteTextView)?.apply {
-        selectedLabel?.let { label -> setText(label.name, false) }
+        if (selectedLabel != null) setText(selectedLabel!!.name, false) else setText("", false)
     }
 
     private fun Note.loadInUI() {
@@ -159,7 +166,6 @@ class AddEditNoteFragment : Fragment() {
                 || receivedNote?.content != it.content
                 || receivedNote?.labelId != it.labelId)
     }?.let {
-        Toast.makeText(requireContext(), "$it", Toast.LENGTH_SHORT).show()
         when (args.edit) {
             true -> mainViewModel.updateNote(it)
             false -> mainViewModel.insertNote(it)

@@ -38,7 +38,7 @@ class BottomNavigationDrawerFragment(private val bottomNavigationDrawerListener:
         setItemSelectedListener()
     }
 
-    private lateinit var labels: List<Label>
+    private var labels: List<Label> = listOf()
 
     private fun initMenu() = viewModel.labels.observe(viewLifecycleOwner, { result ->
         when (result) {
