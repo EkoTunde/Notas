@@ -1,4 +1,4 @@
-package com.ekosoftware.notas.presentation.home
+package com.ekosoftware.notas.presentation.home.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -22,7 +22,7 @@ class LabelRecyclerAdapter(private val context: Context) : RecyclerView.Adapter<
 
     inner class LabelViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(labelName: String) {
-            itemView.txt_title.text = labelName
+            itemView.txt_name.text = labelName
         }
     }
 

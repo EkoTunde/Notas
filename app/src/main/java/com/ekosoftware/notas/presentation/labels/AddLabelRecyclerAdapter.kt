@@ -1,5 +1,6 @@
 package com.ekosoftware.notas.presentation.labels
 
+import android.app.Activity
 import android.content.Context
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -8,9 +9,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
 import com.ekosoftware.notas.R
 import com.ekosoftware.notas.util.hideKeyboard
+import com.ekosoftware.notas.util.showKeyboard
 import kotlinx.android.synthetic.main.item_create_label.view.*
 
 class AddLabelRecyclerAdapter(private val context: Context, private val interaction: Interaction? = null) :
@@ -47,9 +50,10 @@ class AddLabelRecyclerAdapter(private val context: Context, private val interact
             itemView.txt_add_label.apply {
                 setOnFocusChangeListener { _, hasFocus ->
                     itemView.changeDrawables(hasFocus)
-                    if (!hasFocus && !text.toString().alreadyExists()) {
+                    if (!hasFocus) {
                         this.setText("")
                         interaction?.focusLost()
+                        this.error = null
                     }
                 }
                 setOnEditorActionListener { _, actionId, event ->
@@ -60,14 +64,24 @@ class AddLabelRecyclerAdapter(private val context: Context, private val interact
                     ) {
                         if (text.toString().alreadyExists()) {
                             error = this@AddLabelRecyclerAdapter.context.getString(R.string.name_already_exists)
+                            (this@AddLabelRecyclerAdapter.context as Activity).showKeyboard()
+                            false
                         } else insertNewLabel()
-                        true
+                        false
                     }
-                    false
+                    true
                 }
             }
 
-            itemView.btn_save.setOnClickListener { itemView.txt_add_label.insertNewLabel() }
+            itemView.btn_save.setOnClickListener {
+                if (itemView.txt_add_label.text.toString().alreadyExists()) {
+                    itemView.txt_add_label.requestFocus()
+                    itemView.txt_add_label.error =
+                        this@AddLabelRecyclerAdapter.context.getString(R.string.name_already_exists)
+                } else {
+                    itemView.txt_add_label.insertNewLabel()
+                }
+            }
         }
 
         private fun EditText.insertNewLabel() = this.apply {

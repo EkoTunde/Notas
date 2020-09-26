@@ -9,20 +9,24 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ekosoftware.notas.R
 import com.ekosoftware.notas.core.Resource
+import com.ekosoftware.notas.data.model.Label
 import com.ekosoftware.notas.data.model.Note
 import com.ekosoftware.notas.databinding.FragmentHomeBinding
 import com.ekosoftware.notas.presentation.MainViewModel
+import com.ekosoftware.notas.presentation.home.adapter.NotesListItemTouchHelper
+import com.ekosoftware.notas.presentation.home.adapter.NotesRecyclerAdapter
+import com.ekosoftware.notas.presentation.home.adapter.SpaceRecyclerAdapter
+import com.ekosoftware.notas.presentation.home.bottom.BottomExtendedMenuFragment
+import com.ekosoftware.notas.presentation.home.bottom.BottomNavigationDrawerFragment
 import com.ekosoftware.notas.util.hide
 import com.ekosoftware.notas.util.show
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Exception
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -32,23 +36,10 @@ class HomeFragment : Fragment() {
         private const val STATE_NOT_LOADING = "notLoading"
     }
 
-    private fun paraHacer() {
-        TODO(
-            "Tengo que traer:" +
-                    "- Labels -> para el bottom sheet dialog" +
-                    "Tengo que hacer:" +
-                    "- ver las notas" +
-                    "- lanzar bottom sheet dialog" +
-                    "- activar busqueda" +
-                    "- Agregar/editar notas" +
-                    "- Crear (y editar) labels"
-        )
-    }
-
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by activityViewModels<MainViewModel>()
+    private val mainViewModel by activityViewModels<MainViewModel>()
 
     private lateinit var notes: MutableList<Note>
 
@@ -95,7 +86,14 @@ class HomeFragment : Fragment() {
                 true
             }
             R.id.more -> {
-                Toast.makeText(requireContext(), R.string.more, Toast.LENGTH_SHORT).show()
+                if (mainViewModel.selectedLabel().id != null) {
+                    val bottomExtendedMenuFragment =
+                        BottomExtendedMenuFragment(bottomExtendedMenuFragmentListener)
+                    bottomExtendedMenuFragment.show(
+                        requireActivity().supportFragmentManager,
+                        bottomExtendedMenuFragment.tag
+                    )
+                }
                 true
             }
             else -> false
@@ -109,16 +107,19 @@ class HomeFragment : Fragment() {
             }
         }
 
+    private val bottomExtendedMenuFragmentListener = object : BottomExtendedMenuFragment.BottomExtendedMenuListener {
+        override fun onRenameLabel(label: Label) {
+            val action = HomeFragmentDirections.actionHomeFragmentToEditLabelNameFragment(label)
+            findNavController().navigate(action)
+        }
+    }
+
     private fun initRecyclerView() = binding.rvNotes.apply {
 
         layoutManager = LinearLayoutManager(requireContext())
-        //addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         notesRecyclerAdapter = NotesRecyclerAdapter(requireContext(), adapterInteraction)
-
-        val spaceRecyclerAdapter = SpaceRecyclerAdapter(requireContext())
-
-        concatAdapter = ConcatAdapter(notesRecyclerAdapter, spaceRecyclerAdapter)
+        concatAdapter = ConcatAdapter(notesRecyclerAdapter, SpaceRecyclerAdapter(requireContext()))
         adapter = concatAdapter
 
         val noteListCallback = NotesListItemTouchHelper(notesRecyclerAdapter)
@@ -129,22 +130,16 @@ class HomeFragment : Fragment() {
 
     private val adapterInteraction = object : NotesRecyclerAdapter.Interaction {
         override fun onItemSelected(item: Note) {
-            viewModel.selectNote(item)
+            mainViewModel.selectNote(item)
             val action = HomeFragmentDirections.actionHomeFragmentToAddEditNoteFragment(true)
             findNavController().navigate(action)
-        }
-
-        override fun onItemMoved(fromPosition: Int, toPosition: Int) {
-            val note = notes[fromPosition]
-            notes.removeAt(fromPosition)
-            notes.add(toPosition, note)
         }
 
         override fun onDelete(position: Int) {
             if (position < notes.size) {
 
                 val noteToDelete = notes[position]
-                viewModel.deleteNote(noteToDelete)
+                mainViewModel.deleteNote(noteToDelete)
 
                 Snackbar.make(
                     binding.coordLayout,
@@ -153,7 +148,7 @@ class HomeFragment : Fragment() {
                 ).apply {
                     anchorView = binding.btnAddNote
                     setAction(R.string.undo) {
-                        viewModel.insertNote(noteToDelete)
+                        mainViewModel.insertNote(noteToDelete)
                         try {
                             binding.rvNotes.smoothScrollToPosition(position)
                             notesRecyclerAdapter.notifyItemRangeChanged(0, position)
@@ -167,13 +162,14 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun observeCurrentLabel() = viewModel.currentSelectedLabelName.observe(viewLifecycleOwner, { labelName ->
-        val name = labelName ?: requireContext().getString(R.string.all_notes_title)
-        binding.toolbar.title = name
-        binding.collapsingToolbarLayout.title = name
-    })
+    private fun observeCurrentLabel() =
+        mainViewModel.currentSelectedLabelName.observe(viewLifecycleOwner, { labelName ->
+            val name = labelName ?: requireContext().getString(R.string.all_notes_title)
+            binding.toolbar.title = name
+            binding.collapsingToolbarLayout.title = name
+        })
 
-    private fun fetchData(): Unit = viewModel.notes.observe(viewLifecycleOwner, { result ->
+    private fun fetchData(): Unit = mainViewModel.notes.observe(viewLifecycleOwner, { result ->
         when (result) {
             is Resource.Loading -> changeState(STATE_LOADING)
             is Resource.Success -> {
@@ -198,12 +194,12 @@ class HomeFragment : Fragment() {
             STATE_LOADING -> {
                 progressBar.show()
                 rvNotes.hide()
-                arrayOf(bottomAppBar, transparentFab, btnAddNote).forEach { it.isEnabled = false }
+                arrayOf(bottomAppBar, btnAddNote).forEach { it.isEnabled = false }
             }
             else -> {
                 progressBar.hide()
                 rvNotes.show()
-                arrayOf(bottomAppBar, transparentFab, btnAddNote).forEach { it.isEnabled = true }
+                arrayOf(bottomAppBar, btnAddNote).forEach { it.isEnabled = true }
             }
         }
     }

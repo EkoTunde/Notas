@@ -1,4 +1,4 @@
-package com.ekosoftware.notas.presentation.home
+package com.ekosoftware.notas.presentation.home.bottom
 
 import android.os.Bundle
 import android.util.Log

@@ -21,6 +21,7 @@
     <string name="selected_label">com.ekosoftware.notas.SELECTED_LABEL</string>
     <string name="content_description_search">Buscar</string>
     <string name="content_description_more">Más</string>
+    <string name="content_description_order_by">Menú: ordenar por</string>
     <string name="more">Más</string>
     <string name="search">Buscar</string>
     <string name="all_notes_title">Todas</string>
@@ -44,4 +45,11 @@
     <string name="no_notes">¡No hay notas para esta etiqueta!\n Presiona + para agregar una.</string>
     <string name="error_searching_notes">Ocurrió un error al realizar la búsqueda</string>
     <string name="name_already_exists">Esa etiqueta ya existe</string>
+    <string name="search_within_your_notes">Buscar entre tus notas</string>
+    <string name="content_description_rename_label">Menú: renombrar etiqueta</string>
+    <string name="content_description_delete_label">Menú: eliminar etiqueta</string>
+    <string name="delete_label">Eliminar etiqueta</string>
+    <string name="rename_label">Renombrar lista</string>
+    <string name="name">Nombre</string>
+    <string name="label_name">Nombre de la etiqueta</string>
 </resources>

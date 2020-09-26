@@ -1,4 +1,4 @@
-package com.ekosoftware.notas.presentation.home
+package com.ekosoftware.notas.presentation.home.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.ekosoftware.notas.R
-import kotlinx.android.synthetic.main.item_space.view.*
 
 class SpaceRecyclerAdapter(private val context: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 

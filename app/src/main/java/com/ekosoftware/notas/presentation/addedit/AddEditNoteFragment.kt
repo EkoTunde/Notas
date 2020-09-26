@@ -15,23 +15,20 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import androidx.transition.TransitionInflater
 import com.ekosoftware.notas.R
 import com.ekosoftware.notas.core.Resource
 import com.ekosoftware.notas.data.model.Label
 import com.ekosoftware.notas.data.model.Note
+import com.ekosoftware.notas.data.model.getLabelById
 import com.ekosoftware.notas.databinding.FragmentAddEditNoteBinding
 import com.ekosoftware.notas.presentation.MainViewModel
 import com.ekosoftware.notas.util.hideKeyboard
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class AddEditNoteFragment : Fragment() {
-
-    companion object {
-        const val ARG_ACTION = "add or edit action argument"
-    }
 
     private var _binding: FragmentAddEditNoteBinding? = null
     private val binding get() = _binding!!
@@ -40,7 +37,7 @@ class AddEditNoteFragment : Fragment() {
 
     private val mainViewModel by activityViewModels<MainViewModel>()
 
-    private lateinit var labels: List<Label>
+    private var labels: List<Label> = listOf()
 
     private var selectedLabel: Label? = null
 
@@ -48,14 +45,6 @@ class AddEditNoteFragment : Fragment() {
 
     private val unSelectedLabelText by lazy {
         getString(R.string.no_selection_list_item)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        selectedLabel = Label(
-            mainViewModel.currentSelectedLabelId.value,
-            mainViewModel.currentSelectedLabelName.value ?: ""
-        )
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -100,33 +89,31 @@ class AddEditNoteFragment : Fragment() {
         }
     }
 
-    private fun fetchLabels() {
-        /*mutableListOf(
-            Label(1, "Ejemplo 1"),
-            Label(2, "Ejemplo 2"),
-            Label(3, "Ejemplo 3")
-        ).let {
-            labels = it.toList()
-            it.loadInUI()
-        }*/
-        mainViewModel.labels.observe(viewLifecycleOwner, { result ->
-            when (result) {
-                is Resource.Loading -> {
-                }
-                is Resource.Success -> {
-                    labels = result.data
-                    labels.loadInUI()
-                }
-                is Resource.Failure -> {
-                }
+    private fun fetchLabels() = mainViewModel.labels.observe(viewLifecycleOwner, { result ->
+        when (result) {
+            is Resource.Success -> result.data.let {
+                labels = it
+                it.loadInUI()
             }
-        })
-    }
+            is Resource.Failure -> Snackbar.make(
+                binding.coordLayout,
+                R.string.error_fetching_labels,
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+    })
+
 
     private fun fetchNote() = mainViewModel.selectedNote.observe(viewLifecycleOwner, {
         receivedNote = it
+        selectedLabel = labels.getLabelById(receivedNote?.labelId)
+        selectLabelInList()
         receivedNote?.loadInUI()
     })
+
+    private fun selectLabelInList() = (binding.txtLabelLayout.editText as? AutoCompleteTextView)?.apply {
+        selectedLabel?.let { label -> setText(label.name, false) }
+    }
 
     private fun Note.loadInUI() {
         binding.txtTitleLayout.editText?.setText(this.title)
@@ -150,7 +137,13 @@ class AddEditNoteFragment : Fragment() {
                     null
                 }
             }
-            selectedLabel?.let { setText(it.name, false) }
+            if (!args.edit) {
+                selectedLabel = Label(
+                    mainViewModel.currentSelectedLabelId.value,
+                    mainViewModel.currentSelectedLabelName.value ?: ""
+                )
+                selectLabelInList()
+            }
         }
 
     private fun updatedNote() = Note(
@@ -166,6 +159,7 @@ class AddEditNoteFragment : Fragment() {
                 || receivedNote?.content != it.content
                 || receivedNote?.labelId != it.labelId)
     }?.let {
+        Toast.makeText(requireContext(), "$it", Toast.LENGTH_SHORT).show()
         when (args.edit) {
             true -> mainViewModel.updateNote(it)
             false -> mainViewModel.insertNote(it)

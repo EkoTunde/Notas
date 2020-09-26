@@ -1,4 +1,4 @@
-package com.ekosoftware.notas.presentation.home
+package com.ekosoftware.notas.presentation.home.adapter
 
 import android.graphics.Color
 import androidx.core.content.ContextCompat
@@ -38,7 +38,6 @@ class NotesListItemTouchHelper(
     }
 
     override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-        adapter.onItemMoved(viewHolder.absoluteAdapterPosition, target.absoluteAdapterPosition)
         // True because we want to consume the action
         return true
     }

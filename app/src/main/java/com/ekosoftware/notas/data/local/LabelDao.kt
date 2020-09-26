@@ -14,11 +14,11 @@ interface LabelDao {
     fun getLabels(): LiveData<List<Label>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLabel(vararg labels: Label)
+    suspend fun insertLabel(label: Label)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun updateLabel(vararg labels: Label)
+    suspend fun updateLabel(label: Label)
 
     @Delete
-    suspend fun deleteLabel(vararg labels: Label)
+    suspend fun deleteLabel(label: Label)
 } 

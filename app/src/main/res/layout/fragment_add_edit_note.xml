@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/coord_layout"
     android:transitionName="add_note"
     tools:context=".presentation.addedit.AddEditNoteFragment">
 

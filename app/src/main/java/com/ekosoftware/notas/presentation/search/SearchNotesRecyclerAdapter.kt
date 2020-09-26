@@ -1,6 +1,7 @@
 package com.ekosoftware.notas.presentation.search
 
 import android.content.Context
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,7 +40,13 @@ class SearchNotesRecyclerAdapter(private val context: Context, private val inter
 
     inner class SearchNotesViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(note: Note) = itemView.apply {
-            txt_title.text = note.title
+            if (note.title.isNullOrEmpty()) {
+                txt_name.text = this@SearchNotesRecyclerAdapter.context.getString(R.string.no_title_note)
+                txt_name.setTypeface(null, Typeface.ITALIC)
+            } else {
+                txt_name.text = note.title
+                txt_name.setTypeface(null, Typeface.BOLD)
+            }
             txt_content.text = note.content
             setOnClickListener {
                 interaction?.onItemSelected(note)

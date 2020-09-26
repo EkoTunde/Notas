@@ -49,7 +49,7 @@ class LabelsFragment : Fragment() {
             is Resource.Success -> {
                 labels = result.data.toMutableList()
                 labelsRecyclerAdapter.submitList(labels)
-                addLabelRecyclerAdapter.submitExistingNamesList(labels.map { it.name })
+                addLabelRecyclerAdapter.submitExistingNamesList(labels.map { it.name!! })
                 labelsRecyclerAdapter.notifyDataSetChanged()
             }
             is Resource.Failure -> {
@@ -93,7 +93,6 @@ class LabelsFragment : Fragment() {
                 labelsRecyclerAdapter.notifyDataSetChanged()
             }
         }
-
         override fun focusLost() = this@LabelsFragment.hideKeyboard()
     }
 

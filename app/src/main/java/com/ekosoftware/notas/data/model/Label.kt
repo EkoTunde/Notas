@@ -19,7 +19,8 @@ data class Label(
 
 ) : Parcelable
 
-fun List<Label>.getLabelById(id: Long): Label? {
+fun List<Label>.getLabelById(id: Long?): Label? {
+    if (id == null) return null
     for (label in this) {
         if (label.id == id) {
             return label

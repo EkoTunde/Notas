@@ -32,6 +32,9 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_homeFragment_to_editLabelNameFragment"
+            app:destination="@id/editLabelNameFragment" />
     </fragment>
     <fragment
         android:id="@+id/addEditNoteFragment"
@@ -63,4 +66,12 @@
         android:name="com.ekosoftware.notas.presentation.labels.LabelsFragment"
         android:label="@string/labels"
         tools:layout="@layout/fragment_labels" />
+    <fragment
+        android:id="@+id/editLabelNameFragment"
+        android:name="com.ekosoftware.notas.presentation.editlabel.EditLabelNameFragment"
+        android:label="EditLabelNameFragment" >
+        <argument
+            android:name="label"
+            app:argType="com.ekosoftware.notas.data.model.Label" />
+    </fragment>
 </navigation>

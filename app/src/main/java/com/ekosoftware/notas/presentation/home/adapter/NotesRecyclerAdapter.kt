@@ -1,4 +1,4 @@
-package com.ekosoftware.notas.presentation.home
+package com.ekosoftware.notas.presentation.home.adapter
 
 import android.content.Context
 import android.graphics.Typeface
@@ -37,10 +37,11 @@ class NotesRecyclerAdapter(private val context: Context, private val interaction
                     interaction?.onItemSelected(item)
                 }
                 if (item.title.isNullOrEmpty()) {
-                    txt_title.text = this@NotesRecyclerAdapter.context.getString(R.string.no_title_note)
-                    txt_title.setTypeface(null, Typeface.ITALIC)
+                    txt_name.text = this@NotesRecyclerAdapter.context.getString(R.string.no_title_note)
+                    txt_name.setTypeface(null, Typeface.ITALIC)
                 } else {
-                    txt_title.text = item.title
+                    txt_name.text = item.title
+                    txt_name.setTypeface(null, Typeface.BOLD)
                 }
                 txt_content.text = item.content
             }
@@ -71,7 +72,6 @@ class NotesRecyclerAdapter(private val context: Context, private val interaction
 
     interface Interaction {
         fun onItemSelected(item: Note)
-        fun onItemMoved(fromPosition: Int, toPosition: Int)
         fun onDelete(position: Int)
     }
 
@@ -96,10 +96,6 @@ class NotesRecyclerAdapter(private val context: Context, private val interaction
 
     fun setTouchHelper(touchHelper: ItemTouchHelper) {
         this.touchHelper = touchHelper
-    }
-
-    override fun onItemMoved(fromPosition: Int, toPosition: Int) {
-        interaction?.onItemMoved(fromPosition, toPosition)
     }
 
     override fun onItemSwiped(position: Int) {

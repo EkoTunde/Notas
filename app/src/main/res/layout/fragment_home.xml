@@ -49,7 +49,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_title"
+        app:layout_constraintTop_toBottomOf="@+id/txt_name"
         tools:listitem="@layout/item_note" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -100,22 +100,6 @@
         android:layout_gravity="bottom"
         app:menu="@menu/bottom_app_bar_menu"
         app:navigationIcon="@drawable/ic_menu_24" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/transparent_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@android:color/transparent"
-        android:clickable="false"
-        android:outlineAmbientShadowColor="@android:color/transparent"
-        android:outlineSpotShadowColor="@android:color/transparent"
-        android:tint="@android:color/transparent"
-        android:transitionName="transparent_fab"
-        app:backgroundTint="@android:color/transparent"
-        app:layout_anchor="@id/bottomAppBar"
-        app:layout_anchorGravity="center|top"
-        app:rippleColor="@android:color/transparent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_add_note"
