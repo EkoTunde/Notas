@@ -107,13 +107,9 @@ class AddEditNoteFragment : Fragment() {
         }
     })
 
-
-    private val TAG = "AddEditNoteFragment"
     private fun fetchNote() = mainViewModel.selectedNote.observe(viewLifecycleOwner, {
         receivedNote = it
-        Log.d(TAG, "fetchNote: $labels")
         selectedLabel = labels.getLabelById(receivedNote?.labelId)
-        Log.d(TAG, "fetchNote: selected label is $selectedLabel")
         selectLabelInList()
         receivedNote?.loadInUI()
     })
