@@ -1,28 +1,24 @@
 package com.ekosoftware.notas.presentation.labels
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI.setupWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ekosoftware.notas.R
 import com.ekosoftware.notas.core.Resource
 import com.ekosoftware.notas.data.model.Label
+import com.ekosoftware.notas.data.model.getLabelByName
 import com.ekosoftware.notas.databinding.FragmentLabelsBinding
 import com.ekosoftware.notas.presentation.MainViewModel
 import com.ekosoftware.notas.util.hideKeyboard
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
 
 class LabelsFragment : Fragment() {
     private var _binding: FragmentLabelsBinding? = null
@@ -48,12 +44,12 @@ class LabelsFragment : Fragment() {
         fetchData()
     }
 
-    private val TAG = "LabelsFragment"
     private fun fetchData() = viewModel.labels.observe(viewLifecycleOwner, { result ->
         when (result) {
             is Resource.Success -> {
                 labels = result.data.toMutableList()
                 labelsRecyclerAdapter.submitList(labels)
+                addLabelRecyclerAdapter.submitExistingNamesList(labels.map { it.name })
                 labelsRecyclerAdapter.notifyDataSetChanged()
             }
             is Resource.Failure -> {
@@ -91,16 +87,21 @@ class LabelsFragment : Fragment() {
     private val addLabelAdapterInteraction = object : AddLabelRecyclerAdapter.Interaction {
         override fun onAddLabel(name: String) {
             this@LabelsFragment.hideKeyboard()
-            /*Toast.makeText(requireContext(), "$name Inserted", Toast.LENGTH_SHORT).show()
-            val previousLabelId: Long = labels[labels.size - 1].id ?: 0
-            labels.add(0, Label(previousLabelId + 1, name))
-            labelsRecyclerAdapter.notifyAddLine(labels)*/
-            Log.d(TAG, "onAddLabel: attempting to add $name")
-            viewModel.addLabel(Label(name = name))
-            labelsRecyclerAdapter.notifyDataSetChanged()
+            if (!name.alreadyExists()) {
+                labels.getLabelByName(name)
+                viewModel.addLabel(Label(name = name))
+                labelsRecyclerAdapter.notifyDataSetChanged()
+            }
         }
 
         override fun focusLost() = this@LabelsFragment.hideKeyboard()
+    }
+
+    private fun String.alreadyExists(): Boolean {
+        for (label in labels) {
+            if (label.name == this) return true
+        }
+        return false
     }
 
     override fun onDestroy() {

@@ -66,10 +66,22 @@ class MainViewModel @ViewModelInject constructor(
         }
     }
 
-    fun searchNotes(search: String? = null) =
-        liveData<Resource<List<Note>>>(viewModelScope.coroutineContext + Dispatchers.Default) {
+    private val searchText: MutableLiveData<String?> = savedStateHandle.getLiveData<String?>("searchInputText", null)
 
+    fun submitSearchText(searchText: String?) {
+        this.searchText.value = searchText
+    }
+
+    val searchResults = searchText.distinctUntilChanged().switchMap { searchText ->
+        liveData<Resource<List<Note>>>(viewModelScope.coroutineContext + Dispatchers.Default) {
+            emit(Resource.Loading())
+            try {
+                emitSource(noteRepository.searchNotes(searchText).map { Resource.Success(it) })
+            } catch (e: Exception) {
+                emit(Resource.Failure(e))
+            }
         }
+    }
 
     fun insertNote(note: Note) = viewModelScope.launch {
         noteRepository.addNote(note)

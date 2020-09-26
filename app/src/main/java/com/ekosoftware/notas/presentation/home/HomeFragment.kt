@@ -90,7 +90,8 @@ class HomeFragment : Fragment() {
     private fun BottomAppBar.initMenuListener() = this.setOnMenuItemClickListener {
         when (it.itemId) {
             R.id.search -> {
-                Toast.makeText(requireContext(), R.string.search, Toast.LENGTH_SHORT).show()
+                val action = HomeFragmentDirections.actionHomeFragmentToSearchFragment()
+                findNavController().navigate(action)
                 true
             }
             R.id.more -> {

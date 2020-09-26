@@ -47,7 +47,7 @@ class AddLabelRecyclerAdapter(private val context: Context, private val interact
             itemView.txt_add_label.apply {
                 setOnFocusChangeListener { _, hasFocus ->
                     itemView.changeDrawables(hasFocus)
-                    if (!hasFocus) {
+                    if (!hasFocus && !text.toString().alreadyExists()) {
                         this.setText("")
                         interaction?.focusLost()
                     }
@@ -58,7 +58,9 @@ class AddLabelRecyclerAdapter(private val context: Context, private val interact
                         || event.action == KeyEvent.ACTION_DOWN
                         && event.keyCode == KeyEvent.KEYCODE_ENTER
                     ) {
-                        insertNewLabel()
+                        if (text.toString().alreadyExists()) {
+                            error = this@AddLabelRecyclerAdapter.context.getString(R.string.name_already_exists)
+                        } else insertNewLabel()
                         true
                     }
                     false
@@ -76,6 +78,19 @@ class AddLabelRecyclerAdapter(private val context: Context, private val interact
             clearFocus()
             focusSearch(View.FOCUS_UP)
         }
+    }
+
+    private var existingNamesList = listOf<String>()
+
+    fun submitExistingNamesList(names: List<String>) {
+        existingNamesList = names
+    }
+
+    private fun String.alreadyExists(): Boolean {
+        for (name in existingNamesList) {
+            if (name == this) return true
+        }
+        return false
     }
 
     interface Interaction {

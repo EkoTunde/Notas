@@ -42,4 +42,6 @@
     <string name="error_fetching_labels">Ocurrió un error al cargar las etiquetas</string>
     <string name="no_notes_added">No se agregaron notas</string>
     <string name="no_notes">¡No hay notas para esta etiqueta!\n Presiona + para agregar una.</string>
+    <string name="error_searching_notes">Ocurrió un error al realizar la búsqueda</string>
+    <string name="name_already_exists">Esa etiqueta ya existe</string>
 </resources>
