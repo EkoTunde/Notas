@@ -52,4 +52,7 @@
     <string name="rename_label">Renombrar lista</string>
     <string name="name">Nombre</string>
     <string name="label_name">Nombre de la etiqueta</string>
+    <string name="delete_label_question">¿Eliminar la etiqueta?</string>
+    <string name="delete_label_explanation">Eliminarla no borrará ninguna nota asociada a ella.</string>
+    <string name="delete">Eliminar</string>
 </resources>

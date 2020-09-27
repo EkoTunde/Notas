@@ -16,6 +16,7 @@ class BottomExtendedMenuFragment(private val bottomExtendedMenuListener: BottomE
 
     interface BottomExtendedMenuListener {
         fun onRenameLabel(label: Label)
+        fun onDeleteLabel(label: Label)
     }
 
     private var _binding: FragmentBottomExtendedMenuBinding? = null
@@ -39,8 +40,7 @@ class BottomExtendedMenuFragment(private val bottomExtendedMenuListener: BottomE
                 bottomExtendedMenuListener?.onRenameLabel(mainViewModel.selectedLabel())
             }
             R.id.delete_label -> {
-                mainViewModel.deleteLabel(mainViewModel.selectedLabel())
-                //mainViewModel.selectLabel(null)
+                bottomExtendedMenuListener?.onDeleteLabel(mainViewModel.selectedLabel())
             }
         }
         this@BottomExtendedMenuFragment.dismiss()

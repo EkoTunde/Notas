@@ -55,7 +55,7 @@ class NotesRecyclerAdapter(private val context: Context, private val interaction
 
         override fun onScroll(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean = false
 
-        override fun onLongPress(p0: MotionEvent?) = touchHelper.startDrag(this@NotesViewHolder)
+        override fun onLongPress(p0: MotionEvent?) = Unit //touchHelper.startDrag(this@NotesViewHolder)
 
         override fun onTouch(v: View?, event: MotionEvent?): Boolean {
             gestureDetector.onTouchEvent(event)

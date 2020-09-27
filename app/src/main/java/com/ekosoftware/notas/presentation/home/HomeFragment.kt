@@ -1,5 +1,7 @@
 package com.ekosoftware.notas.presentation.home
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -111,6 +113,18 @@ class HomeFragment : Fragment() {
         override fun onRenameLabel(label: Label) {
             val action = HomeFragmentDirections.actionHomeFragmentToEditLabelNameFragment(label)
             findNavController().navigate(action)
+        }
+
+        override fun onDeleteLabel(label: Label) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.delete_label_question)
+                .setMessage(R.string.delete_label_explanation)
+                .setPositiveButton(R.string.delete) { dialog, which ->
+                    mainViewModel.deleteLabel(label)
+                    dialog.dismiss()
+                }.setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }.setCancelable(true).show()
         }
     }
 
